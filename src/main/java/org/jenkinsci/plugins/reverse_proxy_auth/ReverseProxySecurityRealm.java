@@ -267,7 +267,7 @@ public class ReverseProxySecurityRealm extends SecurityRealm {
 
     private String crowdApplicationPassword;
 
-    private CrowdClient crowdClient;
+    private transient CrowdClient crowdClient;
 
     @DataBoundConstructor
     public ReverseProxySecurityRealm(String forwardedUser, String headerGroups, String headerGroupsDelimiter,
