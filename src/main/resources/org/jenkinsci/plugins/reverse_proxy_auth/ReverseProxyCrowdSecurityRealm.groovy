@@ -21,24 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+import jenkins.model.Jenkins
 import org.acegisecurity.providers.ProviderManager
 import org.acegisecurity.providers.anonymous.AnonymousAuthenticationProvider
 import org.acegisecurity.providers.rememberme.RememberMeAuthenticationProvider
-
-import org.jenkinsci.plugins.reverse_proxy_auth.auth.ReverseProxyAuthenticationProvider
 import org.jenkinsci.plugins.reverse_proxy_auth.auth.DefaultReverseProxyAuthenticator
-import org.jenkinsci.plugins.reverse_proxy_auth.auth.ReverseProxyAuthoritiesPopulatorImpl
-
-import jenkins.model.Jenkins
+import org.jenkinsci.plugins.reverse_proxy_auth.auth.ReverseProxyAuthenticationProvider
+import org.jenkinsci.plugins.reverse_proxy_auth.service.ProxyCrowdAuthoritiesPopulator
 
 /*
     Configure Reverse Proxy as the authentication realm.
-
-    Authentication is performed by doing LDAP bind.
     The 'instance' object refers to the instance of ReverseProxySecurityRealm
 */
 
-authoritiesPopulator(ReverseProxyAuthoritiesPopulatorImpl, instance.authContext) {
+authoritiesPopulator(ProxyCrowdAuthoritiesPopulator, instance.crowdClient) {
 }
 
 authenticator(DefaultReverseProxyAuthenticator, instance.retrievedUser, instance.authorities) {

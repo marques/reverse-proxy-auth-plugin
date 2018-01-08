@@ -32,11 +32,19 @@ THE SOFTWARE.
   <f:entry title="${%Header Groups Delimiter Name}">
     <f:textbox field="headerGroupsDelimiter" default="|" />
   </f:entry>
-  <f:entry field="crowd">
-    <f:checkbox name="crowd" checked="${instance.crowd}" title="${%Use CROWD}"/>
-  </f:entry>
-  <f:advanced>  
-	<f:entry title="${%Server}" >
+  <f:advanced>
+    <f:entry title="${%Authorization type:}" field="authorizationType"></f:entry>
+    <f:entry>
+      <f:radio name="authorizationType" value="header" title="${%Header groups}" checked="${instance.isHeaderGroupsAuthorization()}"></f:radio>
+    </f:entry>
+    <f:entry>
+      <f:radio name="authorizationType" value="crowd" title="${%Crowd}" checked="${instance.isCrowdAuthorization()}"></f:radio>
+    </f:entry>
+    <f:entry>
+      <f:radio name="authorizationType" value="ldap" title="${%LDAP}" checked="${instance.isLdapAuthorization()}"></f:radio>
+    </f:entry>
+    <f:entry title="LDAP authorization properties:"></f:entry>
+    <f:entry title="${%Ldap Server}" >
 	  <f:textbox name="server" value="${instance.server}"
             checkUrl="'${rootURL}/securityRealms/LDAPSecurityRealm/serverCheck?field=server&amp;server='+encodeURIComponent(this.value)+'&amp;managerDN='+encodeURIComponent(this.form.elements['managerDN'].value)+'&amp;managerPassword='+encodeURIComponent(this.form.elements['managerPassword'].value)"/>
 	</f:entry>
@@ -66,7 +74,7 @@ THE SOFTWARE.
     </f:entry>
     <f:entry title="${%Manager Password}" >
       <f:password name="managerPassword" value="${instance.managerPassword}" autocomplete="off"
-         checkUrl="'${rootURL}/securityRealms/LDAPSecurityRealm/serverCheck?field=password&amp;server='+encodeURIComponent(this.form.elements['ldap.server'].value)+'&amp;managerDN='+encodeURIComponent(this.form.elements['ldap.managerDN'].value)+'&amp;managerPassword='+encodeURIComponent(this.value)" 
+         checkUrl="'${rootURL}/securityRealms/LDAPSecurityRealm/serverCheck?field=password&amp;server='+encodeURIComponent(this.form.elements['ldap.server'].value)+'&amp;managerDN='+encodeURIComponent(this.form.elements['ldap.managerDN'].value)+'&amp;managerPassword='+encodeURIComponent(this.value)"
       />
     </f:entry>
     <f:entry title="${%Display Name LDAP attribute}">
@@ -78,6 +86,17 @@ THE SOFTWARE.
     <f:entry field="disableMailAddressResolver">
         <f:checkbox name="disableLdapEmailResolver" checked="${instance.disableLdapEmailResolver}" title="${%Disable Ldap Email Resolver}"/>
     </f:entry>
+    <f:entry title="Crowd authorization properties:"></f:entry>
+    <f:entry title="${%Crowd Server:}">
+      <f:textbox field="crowdUrl" />
+    </f:entry>
+    <f:entry title="${%Crowd application name}">
+      <f:textbox field="crowdApplicationName" />
+    </f:entry>
+    <f:entry title="${%Crowd application password}">
+      <f:password field="crowdApplicationPassword" />
+    </f:entry>
+    <f:entry title="Common authorization properties:"></f:entry>
     <f:entry title="${%Cache Update Interval}" >
       <f:textbox name="updateInterval" value="${instance.updateInterval}" default="15"/>
     </f:entry>
