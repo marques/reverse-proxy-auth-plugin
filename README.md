@@ -29,3 +29,7 @@ For loggin:
     docker-compose logs -f <service>
 
     docker-compose logs -f crowd
+
+Jenkins endpoint http://localhost
+
+Crowd endpoint http://localhost/crowd
