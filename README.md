@@ -1,4 +1,4 @@
-Jenkins Reverse Proxy Authentication and Authorisation Plugin
+# Jenkins Reverse Proxy Authentication and Authorisation Plugin
 
 The Reverse Proxy Plugin providers developers the ability to have easy and simple Authentication and Authorisation using SSO techniques. The plugin expects that the user to have Jenkins authenticated agains will be informed via a HHTP header field.
 
@@ -18,3 +18,14 @@ If the username is not forwaded to Jenkins, the user will be authenticated as AN
 
 However, once the LDAP is properly configured instead of groups on the HTTP header, there is guarantee that only the groups of a given user will be returned. There is no possibility to get groups injected via the header.
 
+## Running in docker
+
+Use this command for run jenkins and crowd behind a proxy in containers.
+
+    docker-compose up -d
+
+For loggin:
+
+    docker-compose logs -f <service>
+
+    docker-compose logs -f crowd

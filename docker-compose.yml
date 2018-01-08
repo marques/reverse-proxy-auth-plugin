@@ -1,0 +1,64 @@
+version: '2'
+
+services:
+  crowd:
+    image: blacklabelops/crowd
+    container_name: crowd
+    networks:
+      - crowdnet
+    volumes:
+      - crowddata:/var/atlassian/crowd
+    expose:
+      - 8095
+    ports:
+      - '8095:8095'
+    environment:
+      - "CROWD_PROXY_NAME="
+      - "CROWD_PROXY_PORT="
+      - "CROWD_PROXY_SCHEME="
+      - "CROWD_URL=http://localhost:8095/crowd"
+      - "LOGIN_BASE_URL=http://localhost:8095"
+      - "SPLASH_CONTEXT=ROOT"
+      - "CROWD_CONTEXT=crowd"
+      - "CROWDID_CONTEXT=openidserver"
+      - "OPENID_CLIENT_CONTEXT=openidclient"
+      - "DEMO_CONTEXT=demo"
+    labels:
+      com.blacklabelops.description: "Atlassian Crowd"
+      com.blacklabelops.service: "crowd"
+
+  cloudbees:
+    image: cloudbees/jenkins-enterprise
+    container_name: jenkins-enterprise
+    networks:
+      - crowdnet
+    volumes:
+      - cloudbeesdata:/var/jenkins_home
+    expose:
+      - 8080
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+
+  nginx:
+    build: containers/proxy
+    container_name: proxy-crowd-cloudbees
+    networks:
+      - crowdnet
+    ports:
+      - "80:80"
+    depends_on:
+      - cloudbees
+      - crowd
+    command: [nginx, '-g', 'daemon off;']
+
+
+volumes:
+  crowddata:
+    external: false
+  cloudbeesdata:
+    external: false
+
+networks:
+  crowdnet:
+    driver: bridge
