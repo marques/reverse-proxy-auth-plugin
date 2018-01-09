@@ -1,3 +1,7 @@
-<div>
-    Authorization type help.
+<div>Selects the authorization type that will be used:
+<ul>
+    <li>Header groups: the default option. If this option is selected then the user groups are obtained, if they are provided, from HTTP headers.</li>
+    <li>Crowd: user groups are obtained via Crowd server. If this option is selected, then the <i>Crowd authorization properties</i> should be provided. Crowd server, application name and application password are mandatory to properly configure Crowd access.  </li>
+    <li>LDAP: user groups are obtained via LDAP. If this option is selected, then the <i>LDAP authorization properties</i> should be provided.</li>
+</ul>
 </div>
