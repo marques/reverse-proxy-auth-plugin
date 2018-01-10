@@ -36,7 +36,9 @@ import hudson.security.SecurityRealm;
 import hudson.security.UserMayOrMayNotExistException;
 import hudson.tasks.Mailer;
 import hudson.tasks.Mailer.UserProperty;
+import hudson.util.FormFieldValidator;
 import hudson.util.FormValidation;
+import hudson.util.ListBoxModel;
 import hudson.util.Scrambler;
 import hudson.util.spring.BeanBuilder;
 import jenkins.model.Jenkins;
@@ -68,6 +70,8 @@ import org.jenkinsci.plugins.reverse_proxy_auth.service.ProxyLDAPAuthoritiesPopu
 import org.jenkinsci.plugins.reverse_proxy_auth.service.ProxyLDAPUserDetailsService;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.springframework.dao.DataAccessException;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -611,11 +615,7 @@ public class ReverseProxySecurityRealm extends SecurityRealm {
         if (crowdAuthorization) {
             ProxyCrowdAuthoritiesPopulator authoritiesPopulator = findBean(ProxyCrowdAuthoritiesPopulator.class, appContext);
             return new SecurityComponents(findBean(AuthenticationManager.class, appContext), new ProxyCrowdUserDetailsService(this, appContext));
-        } else if (getLDAPURL() == null) {
-            proxyTemplate = new ReverseProxySearchTemplate();
-
-            return new SecurityComponents(findBean(AuthenticationManager.class, appContext), new ReverseProxyUserDetailsService(appContext));
-        } else {
+        } else if (ldapAuthorization && getLDAPURL() == null) {
             ldapTemplate = new LdapTemplate(findBean(InitialDirContextFactory.class, appContext));
 
             if (groupMembershipFilter != null) {
@@ -624,6 +624,10 @@ public class ReverseProxySecurityRealm extends SecurityRealm {
             }
 
             return new SecurityComponents(findBean(AuthenticationManager.class, appContext), new ProxyLDAPUserDetailsService(this, appContext));
+        } else {
+            proxyTemplate = new ReverseProxySearchTemplate();
+
+            return new SecurityComponents(findBean(AuthenticationManager.class, appContext), new ReverseProxyUserDetailsService(appContext));
         }
     }
 
@@ -784,6 +788,71 @@ public class ReverseProxySecurityRealm extends SecurityRealm {
             } catch (NumberFormatException x) {
                 // The getLdapCtxInstance method throws this if it fails to parse the port number
                 return FormValidation.error(hudson.security.Messages.LDAPSecurityRealm_InvalidPortNumber());
+            }
+        }
+
+        public ListBoxModel doFillAuthorizationTypeItems(@QueryParameter String authorizationType) {
+            return new ListBoxModel(new ListBoxModel.Option("Header groups", "header", HEADER_GROUPS_AUTHORIZATION_TYPE.equals(authorizationType)),
+                    new ListBoxModel.Option("Crowd", "crowd", CROWD_AUTHORIZATION_TYPE.equals(authorizationType) ),
+                    new ListBoxModel.Option("Ldap", "ldap", LDAP_AUTHORIZATION_TYPE.equals(authorizationType)));
+        }
+
+        public FormValidation doCheckAuthorizationType(
+                @QueryParameter final String authorizationType,
+                @QueryParameter final String crowdUrl,
+                @QueryParameter final String crowdApplicationName,
+                @QueryParameter final String crowdApplicationPassword,
+                @QueryParameter final String server) {
+            if (CROWD_AUTHORIZATION_TYPE.equals(authorizationType) && (StringUtils.isEmpty(crowdUrl) ||
+                    StringUtils.isEmpty(crowdApplicationName) || StringUtils.isEmpty(crowdApplicationPassword))){
+                return FormValidation.error("Crowd authorization properties are mandatory");
+            } else if (LDAP_AUTHORIZATION_TYPE.equals(authorizationType) && StringUtils.isEmpty(server)){
+                return FormValidation.error("LDAP authorization properties are mandatory");
+            }
+            return FormValidation.ok();
+        }
+
+        public FormValidation doCheckCrowdUrl(
+                @QueryParameter final String crowdUrl,
+                @QueryParameter final String authorizationType) {
+            if (CROWD_AUTHORIZATION_TYPE.equals(authorizationType) && StringUtils.isEmpty(crowdUrl)){
+                return FormValidation.error("Crowd url is mandatory");
+            }
+            return FormValidation.ok();
+        }
+
+        public FormValidation doCheckCrowdApplicationName(
+                @QueryParameter final String crowdApplicationName,
+                @QueryParameter final String authorizationType) {
+            if (CROWD_AUTHORIZATION_TYPE.equals(authorizationType) && StringUtils.isEmpty(crowdApplicationName)){
+                return FormValidation.error("Crowd application name is mandatory");
+            }
+            return FormValidation.ok();
+        }
+
+        public FormValidation doCheckCrowdApplicationPassword(
+                @QueryParameter final String crowdApplicationPassword,
+                @QueryParameter final String authorizationType) {
+            if (CROWD_AUTHORIZATION_TYPE.equals(authorizationType) && StringUtils.isEmpty(crowdApplicationPassword)){
+                return FormValidation.error("Crowd application password is mandatory");
+            }
+            return FormValidation.ok();
+        }
+
+        public FormValidation doTestCrowdConnection(StaplerRequest req, StaplerResponse rsp,
+            @QueryParameter("crowdUrl") final String crowdUrl,
+            @QueryParameter("crowdApplicationName") final String crowdApplicationName,
+            @QueryParameter("crowdApplicationPassword") final String crowdApplicationPassword)
+            throws IOException, ServletException {
+
+            try {
+                CrowdClient crowdClient = new RestCrowdClientFactory().newInstance(
+                        crowdUrl, crowdApplicationName, crowdApplicationPassword);
+                crowdClient.testConnection();
+                return FormValidation.ok("Success");
+            } catch (Exception e) {
+                String errorMsg = "Error connecting to Crowd: " + e.getMessage();
+                return FormValidation.error(errorMsg);
             }
         }
     }

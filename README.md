@@ -11,7 +11,7 @@ The default values for the HTTP header fields are:
 3. Header Groups Delimiter: |
  
 
-The Authorisation options can be displayed via the Advanced... button, located on the right side of the security settings. The authorization type is selected using the radio button group "Authorization type" with three possible values:
+The Authorisation options can be displayed via the Advanced... button, located on the right side of the security settings. The authorization type is selected using the select "Authorization type" with three possible values:
 1. Header groups (default)
 2. Crowd
 3. LDAP

@@ -7,7 +7,7 @@
   </parent>
 
   <artifactId>reverse-proxy-auth-plugin</artifactId>
-  <version>1.6-beta3</version>
+  <version>1.6-crowd</version>
   <packaging>hpi</packaging>
     <properties>
         <jenkins.version>2.7.3</jenkins.version>
